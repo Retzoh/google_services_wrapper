@@ -2,7 +2,7 @@ image: alpine/edge
 sources:
   - https://git.sr.ht/~retzoh/google_services_wrapper
 environment:
-  repository_name: manifest_templates
+  repository_name: google_services_wrapper
 secrets:
   - ed37ce69-d5be-42df-9b92-41471089d431
   - 7331599a-5f2d-4b4f-9c92-e0a1483014e3
