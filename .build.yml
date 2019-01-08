@@ -1,0 +1,22 @@
+image: alpine/edge
+sources:
+  - https://git.sr.ht/~retzoh/google_services_wrapper
+environment:
+  repository_name: manifest_templates
+secrets:
+  - ed37ce69-d5be-42df-9b92-41471089d431
+  - 7331599a-5f2d-4b4f-9c92-e0a1483014e3
+  - 899472e5-1ec8-4211-a00b-05a0d3eaf775
+tasks:
+  - deploy_master_github: |
+      ln -sf ~/.ssh/.build_test_ssh_key ~/.ssh/id_rsa
+
+      cd $repository_name
+      git remote set-url origin git@git.sr.ht:~retzoh/google_services_wrapper
+      git config --global user.email "~retzoh/builds@lists.sr.ht"
+      git config --global user.name "Deploy"
+
+      ln -sf ~/.ssh/.github_deploy_ssh_key ~/.ssh/id_rsa
+      git checkout -B master -t origin/master
+      git remote set-url origin git@github.com:Retzoh/google_services_wrapper.git
+      git push --set-upstream origin master
