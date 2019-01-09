@@ -21,6 +21,9 @@ setup_params = dict(
     ],
     install_requires=[
         "setuptools==40.6.*",
+        "oauth2client==4.1.*",
+        "google-api-python-client==1.7.*",
+        "httplib2==0.12.*"
     ],
 
     # Tell where the source code for the package is located

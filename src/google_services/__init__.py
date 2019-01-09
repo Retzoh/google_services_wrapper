@@ -1,5 +1,2 @@
-"""Minimal installable & importable package
-"""
-
-if __name__ == "__main__":
-    print("hello world")
+import google_services.drive as drive
+import google_services.mail as mail

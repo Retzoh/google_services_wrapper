@@ -11,6 +11,9 @@ dependencies:
   #Add conda-available pip-dependencies when available. Conda's dependency
   #management works better. (`conda search [package]` to find out)
   - setuptools=40.6
+  - oauth2client=4.1
+  - google-api-python-client=1.7
+  - httplib2=0.12
   #For tests
   - pytest=4.1
   - pytest-cov=2.6
