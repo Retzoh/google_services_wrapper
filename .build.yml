@@ -1,22 +1,104 @@
 image: alpine/edge
+packages:
+  - wget
 sources:
   - https://git.sr.ht/~retzoh/google_services_wrapper
 environment:
   repository_name: google_services_wrapper
+  package_name: google-services
+  package_folder: google_services
+  package_path: .
 secrets:
   - ed37ce69-d5be-42df-9b92-41471089d431
   - 7331599a-5f2d-4b4f-9c92-e0a1483014e3
   - 899472e5-1ec8-4211-a00b-05a0d3eaf775
 tasks:
-  - deploy_master_github: |
-      ln -sf ~/.ssh/.build_test_ssh_key ~/.ssh/id_rsa
+- install_conda: |
+      # Conda does not work out of the box on alpine. glibc needs to be
+      # manually installed. More details at:
+      # https://github.com/frol/docker-alpine-miniconda3
+      wget -q --no-check-certificate https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk
+      sudo apk add --allow-untrusted glibc-2.28-r0.apk
 
-      cd $repository_name
-      git remote set-url origin git@git.sr.ht:~retzoh/google_services_wrapper
-      git config --global user.email "~retzoh/builds@lists.sr.ht"
-      git config --global user.name "Deploy"
+      #Get & intall conda
+      wget -q http://repo.continuum.io/miniconda/\
+      Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+      sh miniconda.sh -b -p $HOME/miniconda
 
-      ln -sf ~/.ssh/.github_deploy_ssh_key ~/.ssh/id_rsa
-      git checkout -B master -t origin/master
-      git remote set-url origin git@github.com:Retzoh/google_services_wrapper.git
-      git push --set-upstream origin master
+      #Store shell (conda) setup
+      echo 'export PATH="$HOME/miniconda/bin:$PATH"' >> ~/.shell_setup
+      echo '. /home/build/miniconda/etc/profile.d/conda.sh' >> ~/.shell_setup
+
+- setup_project_conda: |
+    #Load the shell (conda) setup
+    . ~/.shell_setup
+
+    conda config --add channels conda-forge
+    conda update -y -q --all
+
+    #For one single package:
+    #Create an environment, install project dependencies in it
+    cd $repository_name/$package_path; conda env create -q
+
+    ##For multiple packages:
+    ##Create & activate a work environment (with name package_name)
+    #conda create -q -n $package_name
+    #conda activate $package_name
+    #
+    ##Install one package's dependencies into the work environment
+    #cd $repository_name/$package_path
+    #conda env update -q -n $package_name
+
+- setup_project_pip: |
+    . ~/.shell_setup
+    conda activate $package_name
+
+    # Install package & it's pip dependencies
+    cd $repository_name/$package_path
+    pip install -q .
+
+- check_dependencies: |
+    . ~/.shell_setup
+    conda activate $package_name
+
+    conda update --all --dry-run
+    pip list -o
+
+- integration_test: |
+    . ~/.shell_setup
+    conda activate $package_name
+
+    # Run the tests
+    cd $repository_name/$package_path
+    pytest --cov=$package_folder tests/
+
+- run_project: |
+    . ~/.shell_setup
+    conda activate $package_name
+
+    # Run the project
+    cd $repository_name/$package_path
+    python src/$package_folder/__init__.py
+- deploy_master_github: |
+    ln -sf ~/.ssh/.build_test_ssh_key ~/.ssh/id_rsa
+
+    cd $repository_name
+    git remote set-url origin git@git.sr.ht:~retzoh/google_services_wrapper
+    lines=`git diff --stat origin/master..HEAD | wc -l`
+    if [ $lines -eq 0 ]
+    then
+
+    echo "pushing to github"
+    git config --global user.email "~retzoh/builds@lists.sr.ht"
+    git config --global user.name "Deploy"
+
+    ln -sf ~/.ssh/.github_deploy_ssh_key ~/.ssh/id_rsa
+    git checkout -B master -t origin/master
+    git remote set-url origin git@github.com:Retzoh/google_services_wrapper.git
+    git push --set-upstream origin master
+
+    else
+
+    echo "Aborting github deployment: HEAD is dirty compared to master."
+
+    fi
