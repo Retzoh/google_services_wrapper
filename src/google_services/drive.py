@@ -67,7 +67,7 @@ def create_folder(folder_name, service=None):
 
 
 @apply_defaults(service=default_service)
-def copy_file(source_file_id, new_file_name, parent_folder_id,
+def copy_file(source_file_id, new_file_name, parent_folder_id=None,
               service=None):
     """copy a file in the user's drive
 
@@ -83,7 +83,24 @@ def copy_file(source_file_id, new_file_name, parent_folder_id,
     logger.debug('copying file')
     request_body = {
         "name": new_file_name,
-        "parents": [parent_folder_id]
     }
+    if parent_folder_id is not None:
+        request_body["parents"] = [parent_folder_id]
     return service.files().copy(fileId=source_file_id,
                                 body=request_body).execute()
+
+
+@apply_defaults(service=default_service)
+def delete_file(file_id, service=None):
+    """copy a file in the user's drive
+
+    Args:
+        file_id (str):
+        service (optional, drive-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        an empty string if successful
+    """
+    logger.debug("deleting file")
+    return service.files().delete(fileId=file_id).execute()
+
