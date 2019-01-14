@@ -12,6 +12,7 @@ secrets:
   - ed37ce69-d5be-42df-9b92-41471089d431
   - 7331599a-5f2d-4b4f-9c92-e0a1483014e3
   - 899472e5-1ec8-4211-a00b-05a0d3eaf775
+  - 781be119-2be8-4396-aae6-476c2560b07b
 tasks:
 - install_conda: |
       # Conda does not work out of the box on alpine. glibc needs to be
