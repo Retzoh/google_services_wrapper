@@ -53,6 +53,19 @@ def create_label(label_name, service=None):
             'labelListVisibility': 'labelShow'}).execute()
 
 
+@apply_defaults(service=default_service)
+def delete_label(label_id, service=None):
+    """Delete the label with the specified id
+    Args:
+        label_id(str):
+        service (optional, gmail-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        dict, id and name of the created label
+    """
+    service.users().labels().delete(id=label_id, userId='me').execute()
+
+
 # https://stackoverflow.com/questions/37201250/sending-email-via-gmail-python
 def create_mail(sender, to, subject, msg_html, msg_plain):
     """Create an email message.
@@ -98,11 +111,11 @@ def send(user_id, mime_msg, service=None):
 
 
 @apply_defaults(service=default_service)
-def send_file(mail_adress, project_name, file_id, service=None):
+def send_file(mail_adress, mail_subject, file_id, service=None):
     """Send a mail with a link to a google doc
     Args:
         mail_adress (str):
-        project_name (str):
+        mail_subject (str):
         file_id (str):
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
@@ -114,32 +127,82 @@ def send_file(mail_adress, project_name, file_id, service=None):
     message = create_mail(
         "project_setup@gtd.system",
         mail_adress,
-        project_name,
+        mail_subject,
         f"<a href=https://docs.google.com/document/d/{file_id}>"
         f"Project description</a>",
         f"https://docs.google.com/document/d/{file_id}")
-    return send('me', message, service)
+    return send('me', message, service=service)
 
 
 @apply_defaults(service=default_service)
-def archive_message(message_id, project_label_id, service=None):
+def get_messages(query, service=None):
+    """List messages matching the specified query
+    Args:
+        query (str): a gmail-message-search-query. Documentation link:
+            https://support.google.com/mail/answer/7190?hl=en
+        service (optional, gmail-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        List of Messages that match the criteria of the query. Note that the
+        returned list contains Message IDs, you must use get with the
+        appropriate ID to get the details of a Message.
+    """
+    logger.debug('getting mails')
+    response = service.users().messages().list(userId='me',
+                                               q=query).execute()
+    messages = []
+    if 'messages' in response:
+        messages.extend(response['messages'])
+
+    while 'nextPageToken' in response:
+        page_token = response['nextPageToken']
+        response = service.users().messages().list(
+            userId='me', q=query, pageToken=page_token).execute()
+        messages.extend(response['messages'])
+
+    return messages
+
+
+@apply_defaults(service=default_service)
+def archive_message(message_id, extra_labels=None, service=None):
     """Mark a message with a label, as read and archive it
     Args:
         message_id (str):
-        project_label_id (str):
+        extra_labels (str):
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
     Returns:
         the api request's result
     """
     logger.debug('archiving mail')
+    body = {
+            "removeLabelIds": [
+                'UNREAD', 'INBOX'
+            ]
+        }
+    if extra_labels is not None:
+        body["addLabelIds"] = [extra_labels]
+    return service.users().messages().modify(
+        id=message_id,
+        userId='me', body=body).execute()
+
+
+@apply_defaults(service=default_service)
+def move_to_trash(message_id, service=None):
+    """Mark a message with a label, as read and archive it
+    Args:
+        message_id (str):
+        service (optional, gmail-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        the api request's result
+    """
+    logger.debug('moving mail to trash')
+
     return service.users().messages().modify(
         id=message_id,
         userId='me', body={
             "addLabelIds": [
-                project_label_id
-            ],
-            "removeLabelIds": [
-                'UNREAD', 'INBOX'
+                'TRASH',
             ]
         }).execute()
