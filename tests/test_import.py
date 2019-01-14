@@ -3,4 +3,6 @@
 
 
 def test_import():
+    """test the project's installation
+    """
     import google_services
