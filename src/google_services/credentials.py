@@ -17,9 +17,12 @@ DEFAULT_SCOPES = [
     'https://www.googleapis.com/auth/gmail.modify']
 
 
+DEFAULT_CONFIG_PATH = '~/.google_services_wrapper/'
+
+
 @memoize
 def get_creds(
-        config_path='~/.google_services_wrapper/',
+        config_path=DEFAULT_CONFIG_PATH,
         scopes=DEFAULT_SCOPES):
     config_path = Path(config_path).expanduser()
     # Oauth2 token:
