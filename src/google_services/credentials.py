@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 from google_services._utilities import memoize, logger
-from google_services.config import default_credential_path, default_scopes
+from google_services.config import default
 
 # The different components of the python google-api-wrapper
 from oauth2client import file, client, tools
@@ -9,12 +9,13 @@ from oauth2client import file, client, tools
 
 @memoize
 def get_creds(
-        config_path=default_credential_path,
-        scopes=default_scopes):
+        config=default):
+    config_path = config.credential_path
+    scopes = config.scopes
+
     logger.info('loading token')
+    logger.debug(f'config_path: {config_path}')
     config_path = Path(config_path).expanduser()
-    # Oauth2 token:
-    # lets the script use your google account identity with...
     store = file.Storage(config_path/'token.json')
     creds = store.get()
 

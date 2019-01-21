@@ -5,7 +5,7 @@ import logging
 FORMAT = '%(asctime)s - %(levelname)s - %(message)s - %(filename)s:%(lineno)d'
 logging.basicConfig(format=FORMAT, datefmt='%d/%m/%Y %H:%M:%S')
 logger = logging.getLogger('default')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 # https://stackoverflow.com/questions/4669391/
