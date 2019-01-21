@@ -10,7 +10,7 @@ from httplib2 import Http
 def default_service():
     """Lazy getter for the default drive-api-service to use
     """
-    logger.debug("instantiating google drive service")
+    logger.info("instantiating google drive service")
     return build('drive', 'v3', http=get_creds().authorize(Http()))
 
 
@@ -29,7 +29,8 @@ def get_files(query, service=None):
         of the first file in the drive matching the query
         and accessible within the oauth permissions of the script
     """
-    logger.debug('getting files')
+    logger.info('getting files')
+    logger.debug(f'query = {query}')
     page_token = None
     files = []
     # We have to cycle on all the pages of the drive,
@@ -57,7 +58,7 @@ def create_folder(folder_name, service=None):
     Returns:
         dict, id and name of the folder
     """
-    logger.debug('creating folder')
+    logger.info('creating folder')
     file_metadata = {
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder'
@@ -80,7 +81,7 @@ def copy_file(source_file_id, new_file_name, parent_folder_id=None,
     Returns:
         dict, id and name of the created file
     """
-    logger.debug('copying file')
+    logger.info('copying file')
     request_body = {
         "name": new_file_name,
     }
@@ -101,6 +102,6 @@ def delete_file(file_id, service=None):
     Returns:
         an empty string if successful
     """
-    logger.debug("deleting file")
+    logger.info("deleting file")
     return service.files().delete(fileId=file_id).execute()
 

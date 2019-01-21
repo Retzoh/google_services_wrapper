@@ -29,7 +29,7 @@ def get_labels(service=None):
         list of dict, label information records. The id and name for each
         label existing in the user's inbox.
     """
-    logger.debug('fetching labels')
+    logger.info('fetching labels')
     return service.users().labels().list(userId='me').execute().get(
         'labels', [])
 
@@ -44,13 +44,14 @@ def create_label(label_name, service=None):
     Returns:
         dict, id and name of the created label
     """
-    logger.debug('creating labels')
-    service.users().labels().create(
+    logger.info('creating label')
+    label = service.users().labels().create(
         userId='me',
         body={
             'messageListVisibility': 'show',
             'name': label_name,
             'labelListVisibility': 'labelShow'}).execute()
+    return label
 
 
 @apply_defaults(service=default_service)
@@ -78,7 +79,7 @@ def create_mail(sender, to, subject, msg_html, msg_plain):
     Returns:
         Message body in mime format
     """
-    logger.debug('creating mail')
+    logger.info('creating mail')
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = sender
@@ -94,7 +95,7 @@ def create_mail(sender, to, subject, msg_html, msg_plain):
 # https://stackoverflow.com/questions/37201250/sending-email-via-gmail-python
 @apply_defaults(service=default_service)
 def send(user_id, mime_msg, service=None):
-    logger.debug('sending mail')
+    logger.info('sending mail')
     """Send an email message.
     Args:
         user_id (str): User's email address. The special value
@@ -123,7 +124,7 @@ def send_file(mail_adress, mail_subject, file_id, service=None):
         dict, information about the message used to send the file, including
         it's id
     """
-    logger.debug('sending file')
+    logger.info('sending file')
     message = create_mail(
         "project_setup@gtd.system",
         mail_adress,
@@ -147,7 +148,7 @@ def get_messages(query, service=None):
         returned list contains Message IDs, you must use get with the
         appropriate ID to get the details of a Message.
     """
-    logger.debug('getting mails')
+    logger.info('getting mails')
     response = service.users().messages().list(userId='me',
                                                q=query).execute()
     messages = []
@@ -174,7 +175,7 @@ def archive_message(message_id, extra_labels=None, service=None):
     Returns:
         the api request's result
     """
-    logger.debug('archiving mail')
+    logger.info('archiving mail')
     body = {
             "removeLabelIds": [
                 'UNREAD', 'INBOX'
@@ -197,7 +198,7 @@ def move_to_trash(message_id, service=None):
     Returns:
         the api request's result
     """
-    logger.debug('moving mail to trash')
+    logger.info('moving mail to trash')
 
     return service.users().messages().modify(
         id=message_id,
