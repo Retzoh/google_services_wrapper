@@ -167,6 +167,23 @@ def update_file(source_file_path, file_id, file_name=None,
 
 
 @apply_defaults(service=default_service)
+def download_file(file_id, service=None):
+    """Download a file and return it in a variable
+
+    Args:
+        file_id (str): Id of the file to download
+        service (optional, drive-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        dict, id and name of the created file
+    """
+    logger.info('downloading file')
+
+    return service.files().get_media(
+        fileId=file_id).execute()
+
+
+@apply_defaults(service=default_service)
 def delete_file(file_id, service=None):
     """copy a file in the user's drive
 
