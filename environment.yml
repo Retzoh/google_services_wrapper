@@ -7,13 +7,13 @@ channels:
 dependencies:
   #List here all the conda-dependant dependencies of your project
   - python=3.7
-  - pip=18.1
+  - pip=19.0
   #Add conda-available pip-dependencies when available. Conda's dependency
   #management works better. (`conda search [package]` to find out)
-  - setuptools=40.6
+  - setuptools=40.8
   - oauth2client=4.1
   - google-api-python-client=1.7
   - httplib2=0.12
   #For tests
-  - pytest=4.1
+  - pytest=4.2
   - pytest-cov=2.6

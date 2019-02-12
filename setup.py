@@ -16,11 +16,11 @@ setup_params = dict(
 
     # pip dependencies declaration
     tests_require=[
-        "pytest==4.1.*",
+        "pytest==4.2.*",
         "pytest-cov==2.6.*",
     ],
     install_requires=[
-        "setuptools==40.6.*",
+        "setuptools==40.8.*",
         "oauth2client==4.1.*",
         "google-api-python-client==1.7.*",
         "httplib2==0.12.*"
