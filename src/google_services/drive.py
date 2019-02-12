@@ -2,8 +2,10 @@ from google_services.credentials import get_creds
 from google_services._utilities import memoize, apply_defaults, logger
 
 # The different components of the python google-api-wrapper
+from googleapiclient.http import MediaFileUpload
 from googleapiclient.discovery import build
 from httplib2 import Http
+from pathlib import Path
 
 
 @memoize
@@ -89,6 +91,79 @@ def copy_file(source_file_id, new_file_name, parent_folder_id=None,
         request_body["parents"] = [parent_folder_id]
     return service.files().copy(fileId=source_file_id,
                                 body=request_body).execute()
+
+
+@apply_defaults(service=default_service)
+def create_file(source_file_path, file_name=None, parent_folder_id=None,
+                service=None):
+    """Upload a file from the local machine into a new file on the drive
+
+    Args:
+        source_file_path (str): Path to the file to upload
+        file_name (str): If None, the name of the file will be used
+        parent_folder_id (str):
+        service (optional, drive-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        dict, id and name of the created file
+    """
+    logger.info('creating file')
+    source_file_path = Path(source_file_path).expanduser()
+    if file_name is None:
+        file_name = source_file_path.name
+    request_body = {
+        'name': file_name,
+        'mimeType': '*/*'
+    }
+    media_body = MediaFileUpload(
+        str(source_file_path),
+        mimetype='*/*',
+        resumable=False,)
+    if parent_folder_id is not None:
+        request_body["parents"] = [parent_folder_id]
+    return service.files().create(
+        body=request_body,
+        media_body=media_body,
+    ).execute()
+
+
+@apply_defaults(service=default_service)
+def update_file(source_file_path, file_id, file_name=None,
+                parent_folder_id=None,
+                service=None):
+    """Upload a file from the local machine into an existing file on the drive
+
+    Args:
+        source_file_path (str): Path to the file to upload
+        file_id (str): Id of the file to update
+        file_name (str): If None, the name of the file will be used
+        parent_folder_id (str): If None, sets the file's folder to root. If
+            you want to keep an existing folder, you will have to include
+            it's id.
+        service (optional, drive-api-service): the service to use. Default:
+            the result of `default_service()`
+    Returns:
+        dict, id and name of the created file
+    """
+    logger.info('updating file')
+    source_file_path = Path(source_file_path).expanduser()
+    if file_name is None:
+        file_name = source_file_path.name
+    request_body = {
+        'name': file_name,
+        'mimeType': '*/*'
+    }
+    media_body = MediaFileUpload(
+        str(source_file_path),
+        mimetype='*/*',
+        resumable=False,)
+    if parent_folder_id is not None:
+        request_body["parents"] = [parent_folder_id]
+    return service.files().update(
+        fileId=file_id,
+        body=request_body,
+        media_body=media_body,
+    ).execute()
 
 
 @apply_defaults(service=default_service)
