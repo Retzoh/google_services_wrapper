@@ -1,11 +1,17 @@
 Google services, python framework
 =================================
 
-This repository is a pip package acting as wrapper for the
+This repository is a pip package acting as a high-level wrapper for the
 [google api client](https://developers.google.com/api-client-library/python/start/get_started).
 
-It provides shortcut functions (ex `drive.create_folder(folder_name)`)
-to enable easier usage of the api client.
+It provides high-level access (ex `drive.create_folder(folder_name)`)
+to some functionalities of the
+[drive](https://developers.google.com/drive/api) and
+[gmail](https://developers.google.com/gmail/api) apis.
+
+It is also a collection of working use cases for those apis.
+This is useful since the official google documentation for the apis
+is difficult to use in practice because of incomplete examples.
 
 Subscribe to updates by sending a mail to
 ~retzoh/google-services-wrapper-updates+subscribe@lists.sr.ht

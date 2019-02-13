@@ -1,3 +1,7 @@
+"""High-level wrapper around the google-drive api
+
+"""
+
 from google_services.credentials import get_creds
 from google_services._utilities import memoize, apply_defaults, logger
 
@@ -20,8 +24,9 @@ def default_service():
 
 
 @apply_defaults(service=default_service)
-def get_labels(service=None):
+def get_labels(service=None)->list:
     """Fetches all existing labels in the user's inbox
+
     Args:
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
@@ -35,14 +40,15 @@ def get_labels(service=None):
 
 
 @apply_defaults(service=default_service)
-def create_label(label_name, service=None):
+def create_label(label_name: str, service=None)->dict:
     """Create a label with the specified name in the user's inbox
+
     Args:
-        label_name(str):
+        label_name(str): Name of the label to create
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
     Returns:
-        dict, id and name of the created label
+        dict containing the id and name of the created label
     """
     logger.info('creating label')
     label = service.users().labels().create(
@@ -55,27 +61,33 @@ def create_label(label_name, service=None):
 
 
 @apply_defaults(service=default_service)
-def delete_label(label_id, service=None):
+def delete_label(label_id: str, service=None)->dict:
     """Delete the label with the specified id
+
     Args:
-        label_id(str):
+        label_id(str): Id of the label to delete
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
     Returns:
-        dict, id and name of the created label
+        dict containing the id and name of the created label
     """
     service.users().labels().delete(id=label_id, userId='me').execute()
 
 
 # https://stackoverflow.com/questions/37201250/sending-email-via-gmail-python
-def create_mail(sender, to, subject, msg_html, msg_plain):
+def create_mail(sender: str, to: str, subject: str, msg_html: str,
+                msg_plain: str)->dict:
     """Create an email message.
+
+    I got this to work thanks to
+    https://stackoverflow.com/questions/37201250/sending-email-via-gmail-python
+
     Args:
-        sender (str): mail adress of sender
-        to (str): destination mail adress
-        subject (str): mail subject
-        msg_html (str): html content for the mail
-        msg_plain (str): string version of the mail
+        sender (str): Mail address of sender
+        to (str): Destination mail address
+        subject (str): Mail subject
+        msg_html (str): Html content for the mail
+        msg_plain (str): String version of the mail
     Returns:
         Message body in mime format
     """
@@ -92,11 +104,11 @@ def create_mail(sender, to, subject, msg_html, msg_plain):
     return body
 
 
-# https://stackoverflow.com/questions/37201250/sending-email-via-gmail-python
 @apply_defaults(service=default_service)
-def send(user_id, mime_msg, service=None):
+def send(user_id: str, mime_msg: dict, service=None)->dict:
     logger.info('sending mail')
     """Send an email message.
+    
     Args:
         user_id (str): User's email address. The special value
             "me" can be used to indicate the authenticated user.
@@ -104,7 +116,7 @@ def send(user_id, mime_msg, service=None):
         service (optional, gmail-api-service): the service to use. Default: 
             the result of `default_service()`
     Returns:
-        dict, information about the message sent, including it's id
+        dict containing information about the message sent, including it's id
     """
     result = service.users().messages().send(
         userId=user_id, body=mime_msg).execute()
@@ -112,22 +124,25 @@ def send(user_id, mime_msg, service=None):
 
 
 @apply_defaults(service=default_service)
-def send_file(mail_adress, mail_subject, file_id, service=None):
+def send_file(mail_address: str, mail_subject: str, file_id: str,
+              service=None, sender: str='send.file@google.api')->dict:
     """Send a mail with a link to a google doc
+
     Args:
-        mail_adress (str):
-        mail_subject (str):
-        file_id (str):
+        mail_address (str): Destination mail address
+        mail_subject (str): Mail subject
+        file_id (str): Id of the file to send
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
+        sender (str): Mail address of the sender
     Returns:
         dict, information about the message used to send the file, including
         it's id
     """
     logger.info('sending file')
     message = create_mail(
-        "project_setup@gtd.system",
-        mail_adress,
+        sender,
+        mail_address,
         mail_subject,
         f"<a href=https://docs.google.com/document/d/{file_id}>"
         f"Project description</a>",
@@ -136,7 +151,7 @@ def send_file(mail_adress, mail_subject, file_id, service=None):
 
 
 @apply_defaults(service=default_service)
-def get_messages(query, service=None):
+def get_messages(query: str, service=None)->list:
     """List messages matching the specified query
     Args:
         query (str): a gmail-message-search-query. Documentation link:
@@ -165,11 +180,12 @@ def get_messages(query, service=None):
 
 
 @apply_defaults(service=default_service)
-def archive_message(message_id, extra_labels=None, service=None):
+def archive_message(message_id: str, extra_labels: str=None, service=None):
     """Mark a message with a label, as read and archive it
     Args:
-        message_id (str):
-        extra_labels (str):
+        message_id (str): Id of the message to archive
+        extra_labels (str): Labels to add to the message in the form
+            "label_1,label2"
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
     Returns:
@@ -189,10 +205,10 @@ def archive_message(message_id, extra_labels=None, service=None):
 
 
 @apply_defaults(service=default_service)
-def move_to_trash(message_id, service=None):
+def move_to_trash(message_id: str, service=None):
     """Mark a message with a label, as read and archive it
     Args:
-        message_id (str):
+        message_id (str): Id of the message to trash
         service (optional, gmail-api-service): the service to use. Default:
             the result of `default_service()`
     Returns:

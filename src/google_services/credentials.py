@@ -1,7 +1,11 @@
+"""Manage integration with the google-api SSO
+
+"""
+
 import sys
 from pathlib import Path
 from google_services._utilities import memoize, logger
-from google_services.config import default
+from google_services.config import default, Config
 
 # The different components of the python google-api-wrapper
 from oauth2client import file, client, tools
@@ -9,7 +13,28 @@ from oauth2client import file, client, tools
 
 @memoize
 def get_creds(
-        config=default):
+        config: Config=default):
+    """Check that the SSO token is valid. If not, asks for a new one.
+
+    Asking for a new token is done by opening the sing-in-with-google-tab in
+    the browser. The google account linked to in client_id.json is
+    pre-selected.
+
+    The `client_id.json` corresponds to what you can download from
+    https://console.developers.google.com/apis/credentials.
+
+    I took this function almost as is from the official google gmail api doc:
+    https://developers.google.com/gmail/api/quickstart/python.
+
+    Note: `oauth2client.tools` bugs if `sys.argv` are specified. This
+    function fixes that.
+
+    Args:
+        config: a config element as defined in the `config.py` package
+
+    Returns:
+        credentials that the api can work with
+    """
     config_path = config.credential_path
     scopes = config.scopes
 
